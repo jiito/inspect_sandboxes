@@ -49,7 +49,10 @@ def convert_compose_to_modal_params(
         dockerfile_path = resolve_dockerfile_path(service.build, compose_dir)
         if not dockerfile_path.exists():
             raise FileNotFoundError(f"Dockerfile not found: {dockerfile_path}")
-        context_dir = dockerfile_path.parent
+        if isinstance(service.build, str):
+            context_dir = (compose_dir / service.build).resolve()
+        else:
+            context_dir = (compose_dir / (service.build.context or ".")).resolve()
         params["image"] = modal.Image.from_dockerfile(
             str(dockerfile_path), context_dir=str(context_dir)
         )
